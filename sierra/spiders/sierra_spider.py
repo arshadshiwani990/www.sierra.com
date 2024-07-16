@@ -18,7 +18,7 @@ class SierraSpiderSpider(scrapy.Spider):
 	}
     
     def start_requests(self):
-        # Recent change (2022-03), supplier introduced separate B2B shop
+       
         yield scrapy.Request('https://www.sierra.com/', callback=self.parse_category)
 
     def parse_category(self,response):
@@ -37,26 +37,23 @@ class SierraSpiderSpider(scrapy.Spider):
             product_link=f'https://www.sierra.com{product_link}'
             print(product_link)
             yield scrapy.Request(product_link, callback=self.scrape_product_page)
-            # break
             
-        # nextpage=response.xpath('//a[@aria-label="Go to Next Page"]/@href').get()
-        # if nextpage:
-        #     nextpage=f'https://www.sierra.com{nextpage}'
-        #     yield scrapy.Request(nextpage, callback=self.parse_category_page)
+        nextpage=response.xpath('//a[@aria-label="Go to Next Page"]/@href').get()
+        if nextpage:
+            nextpage=f'https://www.sierra.com{nextpage}'
+            yield scrapy.Request(nextpage, callback=self.parse_category_page)
 
     def scrape_product_page(self,response):
 
         script_data = response.xpath("//script[contains(text(),'ecommerce')]/text()").get()
         
         if script_data:
-            # Extract the JSON part of the script using regex
+           
             json_data = re.findall(r'({"products".+dimension20":[^\]]+]})', script_data)
             if json_data:
-                # json_text = 
+           
                 data=json_data[0]
-                # Remove dataLayer.push({ }) parts to extract only JSON
-                # json_text = json_text.replace('dataLayer.push(', '').replace(');', '')
-                # data = json.loads(data)
+           
                 product_info = json.loads(data)
                 product_data= {
                     'id': product_info['products'][0]['id'],
